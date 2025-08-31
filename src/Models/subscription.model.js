@@ -35,7 +35,7 @@ const subscriptionSchema = new mongoose.Schema ({
     },
     status: {
         type: String,
-        enum: ['actice', 'inactive', 'expired'],
+        enum: ['active', 'inactive', 'expired'],
         default: 'active',
     },
     startDate: {
@@ -63,22 +63,43 @@ const subscriptionSchema = new mongoose.Schema ({
 
 
 // Auto-calculate renewal date
-subscriptionSchema.pre('save', function (next) {
-    if (!this.renewalDate) {
-        const renewalPeriods = {
-            daily: 1,
-            weekly: 7,
-            monthly: 30,
-            yearly: 365
-        }
+subscriptionSchema.pre("save", function (next) {
+  if (!this.renewalDate) {
+    const start = new Date(this.startDate);
 
-        this.renewalDate = new Date(this.startDate);
-        this.renewalDate.setDate(this.renewalDate.getDate() + renewalPeriods[this.frequency]);
+    switch (this.frequency) {
+      case "daily":
+        this.renewalDate = new Date(start.setDate(start.getDate() + 1));
+        break;
+
+      case "weekly":
+        this.renewalDate = new Date(start.setDate(start.getDate() + 7));
+        break;
+
+      case "monthly":
+        this.renewalDate = new Date(start.setMonth(start.getMonth() + 1));
+        break;
+
+      case "yearly":
+        this.renewalDate = new Date(start.setFullYear(start.getFullYear() + 1));
+        break;
     }
 
-    // Auto-update the status if renewal date is passed
-    if (this.renewalDate && this.renewalDate < new Date()) {
-        this.status = 'expired';
-    }
-    next();
-})
+    // Set renewal to end of that day
+    this.renewalDate.setHours(23, 59, 59, 999);
+  }
+
+  // Auto-update the status only if renewalDate is strictly before now
+  if (this.renewalDate && this.renewalDate < new Date()) {
+    this.status = "expired";
+  } else if (!this.status) {
+    this.status = "active"; // default
+  }
+
+  next();
+});
+
+
+const Subscription = mongoose.model('Subscription', subscriptionSchema);
+
+export default Subscription;

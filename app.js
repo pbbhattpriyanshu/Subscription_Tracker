@@ -26,7 +26,7 @@ app.use(arcjetMiddleware);
 // Routes
 app.use('/api/v1/auth', authRouter); 
 app.use('/api/v1/users', userRouter);
-app.use('/api/v1/subscription', subscriptionRouter);
+app.use('/api/v1/subscriptions', subscriptionRouter);
 
 // Health check route
 app.get('/', (req, res) => {
