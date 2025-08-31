@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser';
 import authRouter from './src/Routes/auth.route.js';
 import userRouter from './src/Routes/user.route.js';
 import subscriptionRouter from './src/Routes/subscription.route.js';
+import arcjetMiddleware from './src/Middleware/arcjet.middleware.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +21,7 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); 
+app.use(arcjetMiddleware);
 
 // Routes
 app.use('/api/v1/auth', authRouter); 
